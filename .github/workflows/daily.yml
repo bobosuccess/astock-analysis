@@ -1,9 +1,15 @@
 name: A股分析系统 - 每日自动化
 
+permissions:
+  contents: write  # 允许 update_badge 任务写入配额记录
+
 on:
-  # 每天早7点触发
+  # ========== 定时触发 ==========
   schedule:
-    - cron: '0 23 * * *'  # 北京时间07:00
+    # 晚间简报 19:50 (北京时间) = 11:50 UTC
+    - cron: '50 11 * * *'
+    # 晚间复盘 20:00 (北京时间) = 12:00 UTC
+    - cron: '0 12 * * *'
   # 支持手动触发
   workflow_dispatch:
     inputs:
@@ -14,10 +20,10 @@ on:
         type: choice
         options:
           - all
-          - morning_report
+          - evening_report       # 19:50 晚间简报+情报
+          - evening_review       # 20:00 晚间复盘
           - after_close
           - news_interpret
-          - evening_report
           - self_summary
           - full_scan
 
@@ -99,7 +105,7 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: python scripts/news_interpret.py
 
-  # ========== 晚间复盘 ==========
+  # ========== 晚间简报 (19:50) ==========
   evening_report:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'schedule' || github.event.inputs.task == 'evening_report' || github.event.inputs.task == 'all' }}
@@ -115,10 +121,31 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt -q
 
-      - name: 执行晚间复盘
+      - name: 执行晚间简报
         env:
           SCKEY: ${{ secrets.SCKEY }}
         run: python scripts/evening_report.py
+
+  # ========== 晚间复盘 (20:00) ==========
+  evening_review:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.task == 'evening_review' || github.event.inputs.task == 'all' }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt -q
+
+      - name: 执行晚间复盘
+        env:
+          SCKEY: ${{ secrets.SCKEY }}
+        run: python scripts/evening_review.py
 
   # ========== 每日自我总结 ==========
   self_summary:
@@ -164,7 +191,7 @@ jobs:
 
   # ========== 更新配额Badge ==========
   update_badge:
-    needs: [morning_report, after_close, news_interpret, evening_report, self_summary]
+    needs: [evening_report, evening_review, after_close, news_interpret, self_summary]
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
