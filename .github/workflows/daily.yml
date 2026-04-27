@@ -220,4 +220,5 @@ jobs:
           git config user.email "actions@github.com"
           git add -A
           git diff --staged --quiet || git commit -m "docs: 更新配额记录 $(date +%Y-%m-%d)"
+          git pull origin main --rebase || true
           git push
