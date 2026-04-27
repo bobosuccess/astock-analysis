@@ -10,10 +10,10 @@ import os
 import sys
 import json
 from datetime import datetime
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config_reader import get_config, get_task_config
 from push import push_to_wechat
-
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
 def fetch_news():

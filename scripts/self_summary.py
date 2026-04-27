@@ -10,9 +10,9 @@ import os
 import sys
 import json
 from datetime import datetime
-from config_reader import get_config, get_task_config
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config_reader import get_config, get_task_config
 
 
 def generate_summary():

@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config_reader import is_enabled, is_push_enabled
-from scripts.push import serverchan_push
+from push import serverchan_push
 
 
 def main():
