@@ -13,7 +13,7 @@ aiohttp>=3.9.0           # 异步HTTP（可选）
 
 # ========== 数据存储 ==========
 pyyaml>=6.0               # 读取automation.yaml配置
-sqlite3                   # 内置，无需安装（历史数据存储）
+# sqlite3 内置，无需安装
 
 # ========== AI分析（免费额度）==========
 groq>=0.4.0               # Groq API（免费LLM）
