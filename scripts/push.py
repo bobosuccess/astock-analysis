@@ -48,3 +48,25 @@ def bark_push(title: str, content: str):
         print(f"[Bark推送] {resp.text}")
     except Exception as e:
         print(f"[Bark异常] {e}")
+
+
+def push_to_wechat(title: str, content: str) -> bool:
+    """统一推送入口（微信推送）"""
+    sckey = os.getenv("SCKEY", "")
+    if not sckey or sckey == "YOUR_SCKEY_HERE":
+        print(f"[推送跳过] 未配置SCKEY")
+        return False
+    try:
+        url = f"https://sctapi.ftqq.com/{sckey}.send"
+        data = {"title": title, "desp": content}
+        resp = requests.post(url, data=data, timeout=10)
+        result = resp.json()
+        if result.get("code") == 0:
+            print(f"[推送成功] {title}")
+            return True
+        else:
+            print(f"[推送失败] {result}")
+            return False
+    except Exception as e:
+        print(f"[推送异常] {e}")
+        return False
