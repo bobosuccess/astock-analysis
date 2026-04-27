@@ -4,7 +4,7 @@
 automation:
   # ========== 总开关 ==========
   # true = 开启自动化 / false = 完全手动模式
-  master_switch: true
+  master_switch: false
 
   # ========== 分层开关 ==========
   layers:
