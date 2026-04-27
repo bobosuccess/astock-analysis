@@ -22,10 +22,8 @@ on:
           - all
           - evening_report       # 19:50 晚间简报+情报
           - evening_review       # 20:00 晚间复盘
-          - after_close
-          - news_interpret
-          - self_summary
-          - full_scan
+          - news_interpret       # AI新闻解读
+          - self_summary         # 月度自我总结
 
 env:
   TZ: Asia/Shanghai
@@ -61,27 +59,6 @@ jobs:
         env:
           SCKEY: ${{ secrets.SCKEY }}
         run: python scripts/morning_report.py
-
-  # ========== 盘后批量处理 ==========
-  after_close:
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'schedule' || github.event.inputs.task == 'after_close' || github.event.inputs.task == 'all' }}
-    steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
-
-      - name: 设置Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: 安装依赖
-        run: pip install -r requirements.txt -q
-
-      - name: 执行盘后批量
-        env:
-          SCKEY: ${{ secrets.SCKEY }}
-        run: python scripts/after_close_batch.py
 
   # ========== 新闻解读 ==========
   news_interpret:
@@ -168,30 +145,9 @@ jobs:
           SCKEY: ${{ secrets.SCKEY }}
         run: python scripts/self_summary.py
 
-  # ========== 全市场扫描 ==========
-  full_scan:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.task == 'full_scan' }}
-    steps:
-      - name: 检出代码
-        uses: actions/checkout@v4
-
-      - name: 设置Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: 安装依赖
-        run: pip install -r requirements.txt -q
-
-      - name: 执行全市场扫描
-        env:
-          SCKEY: ${{ secrets.SCKEY }}
-        run: python scripts/full_scan.py
-
   # ========== 更新配额Badge ==========
   update_badge:
-    needs: [evening_report, evening_review, after_close, news_interpret, self_summary]
+    needs: [evening_report, evening_review, news_interpret, self_summary]
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码

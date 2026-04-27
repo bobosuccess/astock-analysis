@@ -26,6 +26,16 @@ automation:
 
   # ========== 任务开关 ==========
   tasks:
+    evening_report:
+      enabled: true
+      time: "19:50"
+      # 晚间简报：大盘数据 + 情报摘要 + 复盘准备
+
+    intelligence_digest:
+      enabled: true
+      time: "19:45"
+      # 情报摘要：自动抓取大V文章
+
     morning_report:
       enabled: true
       time: "07:00"
@@ -51,10 +61,10 @@ automation:
       time: "19:30"
       # AI新闻解读
 
-    evening_report:
+    evening_review:
       enabled: true
       time: "20:00"
-      # 晚间复盘
+      # 晚间复盘：持仓回顾 + 明日计划
 
     self_summary:
       enabled: true
@@ -75,14 +85,14 @@ automation:
       layers: {realtime: true, batch: true, ai_analysis: true, push_notification: true}
       tasks: {morning_report: true, realtime_monitor: true, sentiment_monitor: true,
               after_close_batch: true, news_interpret: true, evening_report: true,
-              self_summary: true, full_scan: false}
+              evening_review: true, self_summary: true, full_scan: false}
 
     testing:
       master_switch: true
       layers: {realtime: true, batch: true, ai_analysis: false, push_notification: true}
       tasks: {morning_report: true, realtime_monitor: true, sentiment_monitor: false,
               after_close_batch: true, news_interpret: false, evening_report: true,
-              self_summary: false, full_scan: false}
+              evening_review: true, self_summary: false, full_scan: false}
 
     manual_mode:
       master_switch: false
@@ -93,7 +103,7 @@ automation:
       layers: {realtime: false, batch: true, ai_analysis: true, push_notification: true}
       tasks: {morning_report: false, realtime_monitor: false, sentiment_monitor: false,
               after_close_batch: false, news_interpret: true, evening_report: false,
-              self_summary: true, full_scan: false}
+              evening_review: false, self_summary: true, full_scan: false}
 
 # ========== 数据源配置 ==========
 data_sources:
