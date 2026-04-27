@@ -1,0 +1,144 @@
+# 自动化开关配置文件
+# 修改此文件控制自动化任务，Python脚本直接读取此文件
+
+automation:
+  # ========== 总开关 ==========
+  # true = 开启自动化 / false = 完全手动模式
+  master_switch: true
+
+  # ========== 分层开关 ==========
+  layers:
+    realtime:
+      enabled: true
+      # 关闭后：盘中不推送实时监控
+
+    batch:
+      enabled: true
+      # 关闭后：手动触发批量任务
+
+    ai_analysis:
+      enabled: true
+      # 关闭后：关闭AI解读功能
+
+    push_notification:
+      enabled: true
+      # 关闭后：不推送微信消息
+
+  # ========== 任务开关 ==========
+  tasks:
+    morning_report:
+      enabled: true
+      time: "07:00"
+      # 晨间简报
+
+    realtime_monitor:
+      enabled: true
+      interval_minutes: 5
+      # 实时行情监控
+
+    sentiment_monitor:
+      enabled: true
+      interval_minutes: 15
+      # 市场情绪监控
+
+    after_close_batch:
+      enabled: true
+      time: "15:05"
+      # 盘后批量处理
+
+    news_interpret:
+      enabled: true
+      time: "19:30"
+      # AI新闻解读
+
+    evening_report:
+      enabled: true
+      time: "20:00"
+      # 晚间复盘
+
+    self_summary:
+      enabled: true
+      time: "22:00"
+      # 每日自我总结
+
+    full_scan:
+      enabled: false
+      time: "21:00"
+      # 全市场扫描（默认关闭，节省资源）
+
+  # ========== 场景预设 ==========
+  # 切换场景时，复制对应配置覆盖上方
+
+  presets:
+    normal_trading_day:
+      master_switch: true
+      layers: {realtime: true, batch: true, ai_analysis: true, push_notification: true}
+      tasks: {morning_report: true, realtime_monitor: true, sentiment_monitor: true,
+              after_close_batch: true, news_interpret: true, evening_report: true,
+              self_summary: true, full_scan: false}
+
+    testing:
+      master_switch: true
+      layers: {realtime: true, batch: true, ai_analysis: false, push_notification: true}
+      tasks: {morning_report: true, realtime_monitor: true, sentiment_monitor: false,
+              after_close_batch: true, news_interpret: false, evening_report: true,
+              self_summary: false, full_scan: false}
+
+    manual_mode:
+      master_switch: false
+      # 所有任务手动触发
+
+    weekend:
+      master_switch: true
+      layers: {realtime: false, batch: true, ai_analysis: true, push_notification: true}
+      tasks: {morning_report: false, realtime_monitor: false, sentiment_monitor: false,
+              after_close_batch: false, news_interpret: true, evening_report: false,
+              self_summary: true, full_scan: false}
+
+# ========== 数据源配置 ==========
+data_sources:
+  realtime:
+    primary: akshare
+    backup1: tencent
+    backup2: eastmoney
+    timeout_seconds: 10
+    retry_times: 2
+
+  history:
+    primary: akshare
+    backup1: baostock
+    timeout_seconds: 30
+    retry_times: 1
+
+  news:
+    primary: sina
+    backup1: eastmoney
+    timeout_seconds: 15
+    retry_times: 2
+
+# ========== 推送配置 ==========
+push:
+  serverchan:
+    enabled: true
+    sckey: "YOUR_SCKEY_HERE"  # 替换为你的Server酱SCKEY
+    daily_limit: 100
+
+  bark:
+    enabled: false
+    bark_key: "YOUR_BARK_KEY_HERE"  # 替换为你的Bark Key
+
+# ========== 配额阈值 ==========
+quota_alert:
+  render_hours:
+    threshold: 100
+    warning: 150
+
+  github_actions_minutes:
+    daily_threshold: 300
+    weekly_threshold: 1000
+
+  groq_api_calls:
+    daily_threshold: 500
+
+  feifei_api_calls:
+    daily_threshold: 300

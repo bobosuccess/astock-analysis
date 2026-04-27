@@ -1,0 +1,196 @@
+name: A股分析系统 - 每日自动化
+
+on:
+  # 每天早7点触发
+  schedule:
+    - cron: '0 23 * * *'  # 北京时间07:00
+  # 支持手动触发
+  workflow_dispatch:
+    inputs:
+      task:
+        description: '选择任务'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - morning_report
+          - after_close
+          - news_interpret
+          - evening_report
+          - self_summary
+          - full_scan
+
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  # ========== 晨间简报 ==========
+  morning_report:
+    if: ${{ true }}  # 始终可触发，实际开关在脚本内判断
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt -q
+
+      - name: 读取自动化开关
+        run: |
+          # 读取master_switch
+          MASTER=$(grep -A1 'master_switch:' automation.yaml | tail -1 | awk '{print $2}')
+          echo "master_switch: $MASTER"
+          if [ "$MASTER" != "true" ]; then
+            echo "自动化总开关已关闭，跳过任务"
+            exit 0
+          fi
+
+      - name: 执行晨间简报
+        env:
+          SCKEY: ${{ secrets.SCKEY }}
+        run: python scripts/morning_report.py
+
+  # ========== 盘后批量处理 ==========
+  after_close:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.task == 'after_close' || github.event.inputs.task == 'all' }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt -q
+
+      - name: 执行盘后批量
+        env:
+          SCKEY: ${{ secrets.SCKEY }}
+        run: python scripts/after_close_batch.py
+
+  # ========== 新闻解读 ==========
+  news_interpret:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.task == 'news_interpret' || github.event.inputs.task == 'all' }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt -q
+
+      - name: 执行AI新闻解读
+        env:
+          SCKEY: ${{ secrets.SCKEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python scripts/news_interpret.py
+
+  # ========== 晚间复盘 ==========
+  evening_report:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.task == 'evening_report' || github.event.inputs.task == 'all' }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt -q
+
+      - name: 执行晚间复盘
+        env:
+          SCKEY: ${{ secrets.SCKEY }}
+        run: python scripts/evening_report.py
+
+  # ========== 每日自我总结 ==========
+  self_summary:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.task == 'self_summary' || github.event.inputs.task == 'all' }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt -q
+
+      - name: 执行自我总结
+        env:
+          SCKEY: ${{ secrets.SCKEY }}
+        run: python scripts/self_summary.py
+
+  # ========== 全市场扫描 ==========
+  full_scan:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.task == 'full_scan' }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt -q
+
+      - name: 执行全市场扫描
+        env:
+          SCKEY: ${{ secrets.SCKEY }}
+        run: python scripts/full_scan.py
+
+  # ========== 更新配额Badge ==========
+  update_badge:
+    needs: [morning_report, after_close, news_interpret, evening_report, self_summary]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 更新使用量
+        run: |
+          python -c "
+          import datetime
+          from pathlib import Path
+
+          badge_path = Path('data/quota_usage.md')
+          today = datetime.date.today().isoformat()
+
+          # 读取当前数据
+          content = badge_path.read_text() if badge_path.exists() else '# 配额使用记录\n\n'
+          content += f'- {today}: 任务执行完成\n'
+
+          badge_path.write_text(content[-2000:])  # 保留最近记录
+          print('配额记录已更新')
+          "
+
+      - name: 提交更新
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "docs: 更新配额记录 $(date +%Y-%m-%d)"
+          git push
