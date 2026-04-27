@@ -59,6 +59,15 @@ def get_config() -> dict:
     return load_config()
 
 
+def get_portfolio() -> list:
+    """获取持仓配置列表"""
+    cfg = load_config()
+    positions = cfg.get("portfolio", {}).get("positions", [])
+    if not positions:
+        return []
+    return positions
+
+
 def get_task_config(task_name: str) -> dict:
     """获取指定任务的配置"""
     cfg = load_config()
@@ -71,6 +80,13 @@ if __name__ == "__main__":
     print(f"总开关: {load_config()['automation']['master_switch']}")
     print(f"\n晨间简报: {'开启' if is_enabled('morning_report') else '关闭'}")
     print(f"实时监控: {'开启' if is_enabled('realtime_monitor') else '关闭'}")
-    print(f"盘后批量: {'开启' if is_enabled('after_close_batch') else '关闭'}")
-    print(f"全市场扫描: {'开启' if is_enabled('full_scan') else '关闭'}")
+    print(f"晚间简报: {'开启' if is_enabled('evening_report') else '关闭'}")
+    print(f"晚间复盘: {'开启' if is_enabled('evening_review') else '关闭'}")
     print(f"\n微信推送: {'开启' if is_push_enabled() else '关闭'}")
+    print(f"\n=== 持仓配置 ===")
+    positions = get_portfolio()
+    if not positions:
+        print("⚠️ 未配置持仓，请编辑 automation.yaml 的 portfolio.positions")
+    else:
+        for p in positions:
+            print(f"• {p.get('name')} ({p.get('code')}): {p.get('shares')}股 @ {p.get('cost')}元")

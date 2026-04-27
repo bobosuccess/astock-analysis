@@ -51,11 +51,6 @@ automation:
       interval_minutes: 15
       # 市场情绪监控
 
-    after_close_batch:
-      enabled: true
-      time: "15:05"
-      # 盘后批量处理
-
     news_interpret:
       enabled: true
       time: "19:30"
@@ -84,14 +79,14 @@ automation:
       master_switch: true
       layers: {realtime: true, batch: true, ai_analysis: true, push_notification: true}
       tasks: {morning_report: true, realtime_monitor: true, sentiment_monitor: true,
-              after_close_batch: true, news_interpret: true, evening_report: true,
+              news_interpret: true, evening_report: true,
               evening_review: true, self_summary: true, full_scan: false}
 
     testing:
       master_switch: true
       layers: {realtime: true, batch: true, ai_analysis: false, push_notification: true}
       tasks: {morning_report: true, realtime_monitor: true, sentiment_monitor: false,
-              after_close_batch: true, news_interpret: false, evening_report: true,
+              news_interpret: false, evening_report: true,
               evening_review: true, self_summary: false, full_scan: false}
 
     manual_mode:
@@ -102,7 +97,7 @@ automation:
       master_switch: true
       layers: {realtime: false, batch: true, ai_analysis: true, push_notification: true}
       tasks: {morning_report: false, realtime_monitor: false, sentiment_monitor: false,
-              after_close_batch: false, news_interpret: true, evening_report: false,
+              news_interpret: true, evening_report: false,
               evening_review: false, self_summary: true, full_scan: false}
 
 # ========== 数据源配置 ==========
@@ -136,6 +131,26 @@ push:
   bark:
     enabled: false
     bark_key: "YOUR_BARK_KEY_HERE"  # 替换为你的Bark Key
+
+# ========== 持仓配置 ==========
+# 用于晚间复盘自动读取持仓盈亏
+portfolio:
+  # ⚠️ 请填入你的真实持仓（示例格式）
+  # 可复制多组，保留最新持仓即可
+  positions:
+    # - code: "000001"       # 股票代码（6位数字）
+    #   name: "平安银行"      # 股票名称
+    #   shares: 1000          # 持仓股数
+    #   cost: 12.50           # 成本价（元）
+    #   direction: "long"     # long=多头 / short=空头
+    #   reason: "低估+股息率"  # 持仓理由（选填）
+    #
+    # - code: "600519"
+    #   name: "贵州茅台"
+    #   shares: 50
+    #   cost: 1680.00
+    #   direction: "long"
+    #   reason: "龙头+外资偏好"
 
 # ========== 配额阈值 ==========
 quota_alert:
