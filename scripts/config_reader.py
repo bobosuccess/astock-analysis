@@ -54,6 +54,17 @@ def get_quota_alert() -> dict:
     return load_config()["quota_alert"]
 
 
+def get_config() -> dict:
+    """获取完整配置"""
+    return load_config()
+
+
+def get_task_config(task_name: str) -> dict:
+    """获取指定任务的配置"""
+    cfg = load_config()
+    return cfg["automation"]["tasks"].get(task_name, {})
+
+
 if __name__ == "__main__":
     # 测试
     print("=== 自动化开关状态 ===")
