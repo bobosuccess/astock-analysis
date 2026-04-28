@@ -19,7 +19,7 @@ automation:
     ai_analysis:
       enabled: true
     push_notification:
-      enabled: false
+      enabled: true
   tasks:
     after_close_batch:
       enabled: true
