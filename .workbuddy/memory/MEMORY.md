@@ -139,8 +139,8 @@
 - **旧模板**：归档到 `📁 归档说明.md`
 
 ## 晨间/晚间脚本完善（2026-04-28）
-- `scripts/morning_report.py`：重写（外盘收盘+A50+A股期货+美元指数+恐慌指数+情绪+盘前三问）
-- `scripts/evening_review.py`：修复任务名bug（原检查"evening_report"应改为"evening_review"）
+- `scripts/morning_report.py`：重写（外盘收盘+A50+板块动向+北向资金+情绪+盘前三问）
+- `scripts/evening_review.py`：因子权重可视化+板块真实数据+交易计划动态生成
 - 所有脚本：修复Windows PowerShell UTF-8输出编码问题
 
 ## 因子进化机制 v1.0（2026-04-28）
@@ -163,6 +163,14 @@
 - 状态持久化：Render无持久磁盘，重启后状态重置
 - **免费额度**：~110h/月（vs 750h免费额度），完全够用
 - **架构**：UptimeRobot每5分钟GET /health → 唤醒容器 → 执行监控 → 休眠
+
+## 数据接口修复（2026-04-28）
+- `ak.sw_index_third_info` → 换用 `ak.stock_board_industry_name_em`（东方财富行业板块，含涨跌幅）
+- `ak.stock_hsgt_north_net_flow_in_em` → 换用 `ak.stock_hsgt_fund_flow_summary_em`（北向资金）
+- `config_reader.py`：复制到根目录，修复 `parent.parent` 路径bug
+- `realtime_monitor.py`：httpx替换为requests（解决Render启动crash）
+- GitHub Actions：所有任务增加master_switch检查（修复逃逸bug）
+- quota_monitor.py：httpx替换为requests
 
 ## 待完成任务
 - ~~Render 容器部署~~ ✅（脚本完成，部署需手动）

@@ -6,6 +6,8 @@ permissions:
 on:
   # ========== 定时触发 ==========
   schedule:
+    # 盘后归档 15:05 (北京时间) = 07:05 UTC
+    - cron: '5 7 * * 1-5'
     # 晚间简报 19:50 (北京时间) = 11:50 UTC
     - cron: '50 11 * * *'
     # 晚间复盘 20:00 (北京时间) = 12:00 UTC
@@ -54,6 +56,35 @@ jobs:
           echo "=== 额度检查开始 ==="
           python scripts/quota_monitor.py --quiet
           echo "=== 额度检查完成 ==="
+
+  # ========== 盘后批量 (15:05 工作日) ==========
+  after_close_batch:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.task == 'after_close_batch' || github.event.inputs.task == 'all' }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt -q
+
+      - name: 检查自动化开关
+        run: |
+          MASTER=$(grep -A1 'master_switch:' automation.yaml | tail -1 | awk '{print $2}')
+          if [ "$MASTER" != "true" ]; then
+            echo "master_switch=false，跳过 after_close_batch"
+            exit 0
+          fi
+
+      - name: 执行盘后批量
+        env:
+          SCKEY: ${{ secrets.SCKEY }}
+        run: python scripts/after_close_batch.py
 
   # ========== 晨间简报 ==========
   morning_report:
@@ -205,7 +236,7 @@ jobs:
 
   # ========== 更新配额Badge ==========
   update_badge:
-    needs: [evening_report, evening_review, news_interpret, self_summary]
+    needs: [after_close_batch, evening_report, evening_review, news_interpret, self_summary]
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码

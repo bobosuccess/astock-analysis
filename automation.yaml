@@ -21,6 +21,9 @@ automation:
     push_notification:
       enabled: false
   tasks:
+    after_close_batch:
+      enabled: true
+      time: '15:05'
     evening_report:
       enabled: true
       time: '19:50'
