@@ -27,7 +27,7 @@
 | `scripts/config_reader.py` | 配置读取器（连接YAML和Python） |
 | `scripts/push.py` | 推送模块（Server酱/Bark） |
 | `scripts/morning_report.py` | 晨间简报脚本 |
-| `scripts/after_close_batch.py` | 盘后批量脚本 |
+| `scripts/after_close_batch.py` | 盘后批量脚本（真实数据归档，5大数据源）|
 
 ## 技术栈决策
 
@@ -174,8 +174,8 @@
 
 ## 待完成任务
 - ~~Render 容器部署~~ ✅（脚本完成，部署需手动）
-- 完善各脚本的业务逻辑（after_close_batch.py仍为骨架）
-- GitHub Actions 重新测试
+- ~~完善各脚本的业务逻辑（after_close_batch.py仍为骨架）~~ ✅（2026-04-28）
+- GitHub Actions 重新测试（5个修复验证）
 - Roam笔记增量同步机制（待设计）
 - ~~用户提供因子权重配置（短线/中长线各因子占比）~~ ✅
 - GitHub Actions 重新测试（之前脚本导入路径已修复）
