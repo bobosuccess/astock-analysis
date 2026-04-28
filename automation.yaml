@@ -1,5 +1,5 @@
 automation:
-  master_switch: false
+  master_switch: true
   # ========== 付费安全原则 ==========
   # 所有涉及付费的服务，一旦出现以下情况，立即停止自动化：
   # 1. 免费额度耗尽前发出预警
