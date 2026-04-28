@@ -1,0 +1,25 @@
+# Render 部署配置
+# docs: https://render.com/docs/yaml
+# 
+# 使用说明:
+# 1. push 到 GitHub
+# 2. Render → New → Static Site (或 Web Service)
+#    → 连接 GitHub 仓库 → 设置以下环境变量
+# 3. 环境变量: SCKEY (Server酱密钥)
+# 4. 环境变量: PORT = 10000 (Render 自动设置)
+# 5. UptimeRobot 设置见 docs/Render部署指南.md
+
+services:
+  - type: web
+    name: astock-realtime-monitor
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python scripts/realtime_monitor.py
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PORT
+        value: "10000"

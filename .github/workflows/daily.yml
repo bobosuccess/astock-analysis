@@ -29,6 +29,32 @@ env:
   TZ: Asia/Shanghai
 
 jobs:
+  # ========== 额度检查（优先运行）==========
+  quota_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt -q
+
+      - name: 额度检查
+        env:
+          SCKEY: ${{ secrets.SCKEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+        run: |
+          echo "=== 额度检查开始 ==="
+          python scripts/quota_monitor.py --quiet
+          echo "=== 额度检查完成 ==="
+
   # ========== 晨间简报 ==========
   morning_report:
     if: ${{ true }}  # 始终可触发，实际开关在脚本内判断

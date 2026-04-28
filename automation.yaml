@@ -1,106 +1,104 @@
-# 自动化开关配置文件
-# 修改此文件控制自动化任务，Python脚本直接读取此文件
-
 automation:
-  # ========== 总开关 ==========
-  # true = 开启自动化 / false = 完全手动模式
   master_switch: false
-
-  # ========== 分层开关 ==========
+  # ========== 付费安全原则 ==========
+  # 所有涉及付费的服务，一旦出现以下情况，立即停止自动化：
+  # 1. 免费额度耗尽前发出预警
+  # 2. 需要付费才能继续 → 立即停止 + 微信通知人工判断
+  # 3. 检测到任何付费订阅/变更为付费 → 立即停止
+  # 自动恢复方式：人工确认后，将 master_switch 改为 true
+  quota_guard:
+    enabled: true
+    auto_stop: true          # 额度耗尽时自动停止（不自动付费）
+    alert_before_limit: 0.8  # 使用80%时发出预警
+    daily_check_enabled: true  # 每日早间自动检查额度
   layers:
     realtime:
       enabled: true
-      # 关闭后：盘中不推送实时监控
-
     batch:
       enabled: true
-      # 关闭后：手动触发批量任务
-
     ai_analysis:
       enabled: true
-      # 关闭后：关闭AI解读功能
-
     push_notification:
-      enabled: true
-      # 关闭后：不推送微信消息
-
-  # ========== 任务开关 ==========
+      enabled: false
   tasks:
     evening_report:
       enabled: true
-      time: "19:50"
-      # 晚间简报：大盘数据 + 情报摘要 + 复盘准备
-
+      time: '19:50'
     intelligence_digest:
       enabled: true
-      time: "19:45"
-      # 情报摘要：自动抓取大V文章
-
+      time: '19:45'
     morning_report:
       enabled: true
-      time: "07:00"
-      # 晨间简报
-
+      time: 07:00
     realtime_monitor:
       enabled: true
       interval_minutes: 5
-      # 实时行情监控
-
     sentiment_monitor:
       enabled: true
       interval_minutes: 15
-      # 市场情绪监控
-
     news_interpret:
       enabled: true
-      time: "19:30"
-      # AI新闻解读
-
+      time: '19:30'
     evening_review:
       enabled: true
-      time: "20:00"
-      # 晚间复盘：持仓回顾 + 明日计划
-
+      time: '20:00'
     self_summary:
       enabled: true
-      time: "22:00"
-      # 每日自我总结
-
+      time: '22:00'
     full_scan:
       enabled: false
-      time: "21:00"
-      # 全市场扫描（默认关闭，节省资源）
-
-  # ========== 场景预设 ==========
-  # 切换场景时，复制对应配置覆盖上方
-
+      time: '21:00'
   presets:
     normal_trading_day:
       master_switch: true
-      layers: {realtime: true, batch: true, ai_analysis: true, push_notification: true}
-      tasks: {morning_report: true, realtime_monitor: true, sentiment_monitor: true,
-              news_interpret: true, evening_report: true,
-              evening_review: true, self_summary: true, full_scan: false}
-
+      layers:
+        realtime: true
+        batch: true
+        ai_analysis: true
+        push_notification: true
+      tasks:
+        morning_report: true
+        realtime_monitor: true
+        sentiment_monitor: true
+        news_interpret: true
+        evening_report: true
+        evening_review: true
+        self_summary: true
+        full_scan: false
     testing:
       master_switch: true
-      layers: {realtime: true, batch: true, ai_analysis: false, push_notification: true}
-      tasks: {morning_report: true, realtime_monitor: true, sentiment_monitor: false,
-              news_interpret: false, evening_report: true,
-              evening_review: true, self_summary: false, full_scan: false}
-
+      layers:
+        realtime: true
+        batch: true
+        ai_analysis: false
+        push_notification: true
+      tasks:
+        morning_report: true
+        realtime_monitor: true
+        sentiment_monitor: false
+        news_interpret: false
+        evening_report: true
+        evening_review: true
+        self_summary: false
+        full_scan: false
     manual_mode:
       master_switch: false
-      # 所有任务手动触发
-
     weekend:
       master_switch: true
-      layers: {realtime: false, batch: true, ai_analysis: true, push_notification: true}
-      tasks: {morning_report: false, realtime_monitor: false, sentiment_monitor: false,
-              news_interpret: true, evening_report: false,
-              evening_review: false, self_summary: true, full_scan: false}
-
-# ========== 数据源配置 ==========
+      layers:
+        realtime: false
+        batch: true
+        ai_analysis: true
+        push_notification: true
+      tasks:
+        morning_report: false
+        realtime_monitor: false
+        sentiment_monitor: false
+        news_interpret: true
+        evening_report: false
+        evening_review: false
+        self_summary: true
+        full_scan: false
 data_sources:
   realtime:
     primary: akshare
@@ -108,62 +106,37 @@ data_sources:
     backup2: eastmoney
     timeout_seconds: 10
     retry_times: 2
-
   history:
     primary: akshare
     backup1: baostock
     timeout_seconds: 30
     retry_times: 1
-
   news:
     primary: sina
     backup1: eastmoney
     timeout_seconds: 15
     retry_times: 2
-
-# ========== 推送配置 ==========
 push:
   serverchan:
     enabled: true
-    sckey: "YOUR_SCKEY_HERE"  # 替换为你的Server酱SCKEY
+    sckey: YOUR_SCKEY_HERE
     daily_limit: 100
-
   bark:
     enabled: false
-    bark_key: "YOUR_BARK_KEY_HERE"  # 替换为你的Bark Key
-
-# ========== 持仓配置 ==========
-# 用于晚间复盘自动读取持仓盈亏
+    bark_key: YOUR_BARK_KEY_HERE
 portfolio:
-  # ⚠️ 请填入你的真实持仓（示例格式）
-  # 可复制多组，保留最新持仓即可
-  positions:
-    # - code: "000001"       # 股票代码（6位数字）
-    #   name: "平安银行"      # 股票名称
-    #   shares: 1000          # 持仓股数
-    #   cost: 12.50           # 成本价（元）
-    #   direction: "long"     # long=多头 / short=空头
-    #   reason: "低估+股息率"  # 持仓理由（选填）
-    #
-    # - code: "600519"
-    #   name: "贵州茅台"
-    #   shares: 50
-    #   cost: 1680.00
-    #   direction: "long"
-    #   reason: "龙头+外资偏好"
-
-# ========== 配额阈值 ==========
+  # 自选股池配置（实时监控使用）
+  # 格式1（简单）: ["000001.SZ", "600519.SS"]
+  # 格式2（带止损）: [{"code": "000001.SZ", "stop_loss": 12.50}, {"code": "600519.SS", "stop_loss": 1600}]
+  positions: []
 quota_alert:
   render_hours:
     threshold: 100
     warning: 150
-
   github_actions_minutes:
     daily_threshold: 300
     weekly_threshold: 1000
-
   groq_api_calls:
     daily_threshold: 500
-
   feifei_api_calls:
     daily_threshold: 300

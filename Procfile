@@ -1,0 +1,1 @@
+web: python scripts/realtime_monitor.py

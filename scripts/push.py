@@ -1,7 +1,9 @@
 # 推送模块
 # 支持: Server酱 / Bark
 
-import os
+import os, sys, io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+
 import requests
 from config_reader import load_config
 
@@ -26,10 +28,24 @@ def serverchan_push(title: str, content: str):
         result = resp.json()
         if result.get("code") == 0 or result.get("data", {}).get("error") == 0:
             print(f"[推送成功] {title}")
+            _record_quota()  # 记录一次推送，用于每日额度监控
         else:
             print(f"[推送失败] {result}")
     except Exception as e:
         print(f"[推送异常] {e}")
+
+
+def _record_quota():
+    """记录一次推送发送，用于额度监控"""
+    try:
+        import subprocess, sys
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        result = subprocess.run(
+            [sys.executable, os.path.join(script_dir, "quota_monitor.py"), "--record-send"],
+            capture_output=True, text=True, timeout=5
+        )
+    except Exception:
+        pass  # 记录失败不影响推送
 
 
 def bark_push(title: str, content: str):

@@ -6,10 +6,13 @@
 功能：持仓盈亏复盘 + 因子评分 + 明日交易计划
 """
 
-import sys
+import sys, io
 from pathlib import Path
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+
+# Windows PowerShell UTF-8 输出修复
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
 # 添加项目根目录到路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -188,8 +191,8 @@ def get_trading_plan() -> str:
 
 
 def main():
-    if not is_enabled("evening_report"):
-        print("[跳过] 晚间复盘开关已关闭")
+    if not is_enabled("evening_review"):
+        print("[跳过] 晚间复盘开关已关闭 (master_switch=false)")
         return
 
     print("=" * 50)

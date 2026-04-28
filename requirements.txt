@@ -10,6 +10,7 @@ numpy>=1.24.0            # 数值计算
 # ========== HTTP请求 ==========
 requests>=2.31.0         # HTTP请求
 aiohttp>=3.9.0           # 异步HTTP（可选）
+flask>=3.0.0             # HTTP服务（Render容器用）
 
 # ========== 数据存储 ==========
 pyyaml>=6.0               # 读取automation.yaml配置

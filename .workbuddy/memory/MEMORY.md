@@ -86,9 +86,10 @@
 - 新增原则12：闭环操作（每个子系统必须有输入→输出→反馈）
 - 新增原则13：自我进化（操盘反馈+指标命中率驱动优化）
 
-### 自动化任务全部暂停
-- 7个任务：情报摘要/操作总结/操作计划/收益曲线/晨间简报/自问自答/每日复盘
-- 暂停原因：合并期间避免重复运行
+### 自动化任务全部暂停（2026-04-28）
+- master_switch: false，所有GitHub Actions任务被拦截
+- 恢复方式：改 automation.yaml 中 master_switch: true
+- 旧任务：情报摘要/操作总结/操作计划/收益曲线/晨间简报/自问自答/每日复盘
 - 对"免费"承诺敏感，需要诚实说明成本
 - 拒绝"吹牛"，偏好务实方案
 - 核心需求：通达信公式调试 + 24h在线 + 不占内存
@@ -124,12 +125,51 @@
 - 新增 `⚙️ 系统配置/自动化标准输出流程.md`（完整自动化时间轴文档）
 - 模板B/D/F：明确标注为停用（手动维护）
 
-## GitHub Actions 已验证（2026-04-28）\n- SCKEY + GROQ_API_KEY 已配置\n- 微信推送正常收到\n- update_badge 任务报错（可忽略，非核心功能）\n- evening_review 日期逻辑已修复（09:30前显示昨天）\n- 仓库：https://github.com/bobosuccess/astock-analysis\n\n## 待完成任务
-- 配置 GitHub Secrets（SCKEY、GROQ_API_KEY）
-- 完善各脚本的业务逻辑（当前为骨架）
-- Render 容器部署（实时监控层）
-- ~~用户提供通达信指标文件（.tn6），建立指标版本库~~ ✅
+## GitHub Actions 已验证（2026-04-28）
+- SCKEY + GROQ_API_KEY 已配置
+- 微信推送正常收到
+- update_badge 任务报错（可忽略，非核心功能）
+- evening_review 日期逻辑已修复（09:30前显示昨天）
+- 仓库：https://github.com/bobosuccess/astock-analysis
+
+## 操盘日志合并（2026-04-28）
+- **合并版模板**：`📊 交易/📊 操盘日志/📋 每日操盘/每日操盘日志-合并版.md`
+- **四区结构**：自动数据区 / 看盘实操区 / 操作总结区 / 因子追踪区 / 明日计划区
+- **自动填充脚本**：`scripts/fill_daily_log.py`（akshare驱动）
+- **旧模板**：归档到 `📁 归档说明.md`
+
+## 晨间/晚间脚本完善（2026-04-28）
+- `scripts/morning_report.py`：重写（外盘收盘+A50+A股期货+美元指数+恐慌指数+情绪+盘前三问）
+- `scripts/evening_review.py`：修复任务名bug（原检查"evening_report"应改为"evening_review"）
+- 所有脚本：修复Windows PowerShell UTF-8输出编码问题
+
+## 因子进化机制 v1.0（2026-04-28）
+- 追踪脚本：`scripts/factor_tracker.py`
+- 命中规则：F1技术(3日/20日)/F2市场/F3情报/F4板块/F5基本面(中线)
+- 进化阈值：命中率≥60%+样本≥5 → +5%；≤40% → -5%；维持区间40-60%
+- 数据存储：`data/factor_tracking/trades_YYYYMMDD.json`（每日一条JSON）
+- 配置文件：`factor_config.json`（含权重当前值+进化历史）
+- 月度报告模板：`📋 因子命中率追踪/月度进化报告-模板.md`
+- 使用：`record`（录入）/ `analyze --days 90`（分析）/ `evolve`（执行进化）/ `report`（月度报告）
+
+## Render 实时监控部署（2026-04-28）
+- **完全免费方案**：UptimeRobot（免费）+ Render Free Tier
+- 监控脚本：`scripts/realtime_monitor.py`（重构为 Flask HTTP 服务）
+- 预警类型：涨停/炸板/急跌/大跌/放量/止损（6种）
+- 数据源：akshare优先 + 腾讯财经备用
+- 部署配置：`render.yaml` + `Procfile`（web类型，监听10000端口）
+- 部署指南：`docs/Render部署指南.md`
+- 自选股配置：`automation.yaml → portfolio.positions`
+- 状态持久化：Render无持久磁盘，重启后状态重置
+- **免费额度**：~110h/月（vs 750h免费额度），完全够用
+- **架构**：UptimeRobot每5分钟GET /health → 唤醒容器 → 执行监控 → 休眠
+
+## 待完成任务
+- ~~Render 容器部署~~ ✅（脚本完成，部署需手动）
+- 完善各脚本的业务逻辑（after_close_batch.py仍为骨架）
+- GitHub Actions 重新测试
+- Roam笔记增量同步机制（待设计）
 - ~~用户提供因子权重配置（短线/中长线各因子占比）~~ ✅
 - GitHub Actions 重新测试（之前脚本导入路径已修复）
-- 指标命中率统计记录（启动进化机制）
+- ~~指标命中率统计记录（启动进化机制）~~ ✅
 - Roam笔记增量同步机制（待设计）
