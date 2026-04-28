@@ -6,10 +6,9 @@
 功能：外盘回顾 + A股前瞻 + 盘前三问 + 推送微信
 """
 
-import sys, io
+import sys
+from datetime import datetime
 from pathlib import Path
-
-# Windows PowerShell UTF-8 输出修复
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).parent.parent))

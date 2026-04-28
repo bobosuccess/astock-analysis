@@ -249,7 +249,8 @@ def main():
     # ── 分步采集 ──
     print("\n📥 采集指数数据...")
     indices = collect_index_snapshot()
-    print(f"  {'✅' if indices['status']=='ok' else '❌'} {indices.get('msg', f'{len(indices.get(\"data\",[]))} 条')}")
+    _count = len(indices.get("data", []))
+    print(f"  {'✅' if indices['status']=='ok' else '❌'} {indices.get('msg', f'{_count} 条')}")
 
     print("\n📊 采集市场统计...")
     market_stats = collect_market_stats()
@@ -261,7 +262,8 @@ def main():
 
     print("\n💰 采集北向资金...")
     north_funds = collect_north_funds()
-    print(f"  {'✅' if north_funds['status']=='ok' else '❌'} {north_funds.get('msg', f'{len(north_funds.get(\"data\",[]))} 条')}")
+    _nf_count = len(north_funds.get("data", []))
+    print(f"  {'✅' if north_funds['status']=='ok' else '❌'} {north_funds.get('msg', f'{_nf_count} 条')}")
 
     print("\n🏧 采集主力净流入...")
     mainfund = collect_mainfund_sectors()
