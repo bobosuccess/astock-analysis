@@ -12,8 +12,6 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 # Windows PowerShell UTF-8 输出修复
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-
 # 添加项目根目录到路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
 

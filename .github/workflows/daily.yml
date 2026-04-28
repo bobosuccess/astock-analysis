@@ -22,6 +22,7 @@ on:
         type: choice
         options:
           - all
+          - after_close_batch   # 15:05 盘后归档
           - evening_report       # 19:50 晚间简报+情报
           - evening_review       # 20:00 晚间复盘
           - news_interpret       # AI新闻解读
@@ -29,6 +30,7 @@ on:
 
 env:
   TZ: Asia/Shanghai
+  PYTHONIOENCODING: UTF-8
 
 jobs:
   # ========== 额度检查（优先运行）==========

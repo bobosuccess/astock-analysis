@@ -22,8 +22,6 @@ import pandas as pd
 import numpy as np
 
 # Windows 控制台 UTF-8
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 try:
     from flask import Flask, jsonify

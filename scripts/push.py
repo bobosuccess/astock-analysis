@@ -2,8 +2,6 @@
 # 支持: Server酱 / Bark
 
 import os, sys, io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-
 import requests
 from config_reader import load_config
 

@@ -20,8 +20,6 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 # Windows PowerShell UTF-8 输出修复
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import akshare as ak

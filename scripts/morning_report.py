@@ -10,8 +10,6 @@ import sys, io
 from pathlib import Path
 
 # Windows PowerShell UTF-8 输出修复
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-from datetime import datetime, timedelta, date
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).parent.parent))

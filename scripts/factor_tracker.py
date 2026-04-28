@@ -13,8 +13,6 @@
 """
 
 import sys, io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-
 import os, json, yaml
 from pathlib import Path
 from datetime import datetime, timedelta
