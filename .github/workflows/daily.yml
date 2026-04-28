@@ -102,6 +102,14 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt -q
 
+      - name: 检查自动化开关
+        run: |
+          MASTER=$(grep -A1 'master_switch:' automation.yaml | tail -1 | awk '{print $2}')
+          if [ "$MASTER" != "true" ]; then
+            echo "master_switch=false，跳过 news_interpret"
+            exit 0
+          fi
+
       - name: 执行AI新闻解读
         env:
           SCKEY: ${{ secrets.SCKEY }}
@@ -124,6 +132,14 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt -q
 
+      - name: 检查自动化开关
+        run: |
+          MASTER=$(grep -A1 'master_switch:' automation.yaml | tail -1 | awk '{print $2}')
+          if [ "$MASTER" != "true" ]; then
+            echo "master_switch=false，跳过 evening_report"
+            exit 0
+          fi
+
       - name: 执行晚间简报
         env:
           SCKEY: ${{ secrets.SCKEY }}
@@ -145,6 +161,14 @@ jobs:
       - name: 安装依赖
         run: pip install -r requirements.txt -q
 
+      - name: 检查自动化开关
+        run: |
+          MASTER=$(grep -A1 'master_switch:' automation.yaml | tail -1 | awk '{print $2}')
+          if [ "$MASTER" != "true" ]; then
+            echo "master_switch=false，跳过 evening_review"
+            exit 0
+          fi
+
       - name: 执行晚间复盘
         env:
           SCKEY: ${{ secrets.SCKEY }}
@@ -165,6 +189,14 @@ jobs:
 
       - name: 安装依赖
         run: pip install -r requirements.txt -q
+
+      - name: 检查自动化开关
+        run: |
+          MASTER=$(grep -A1 'master_switch:' automation.yaml | tail -1 | awk '{print $2}')
+          if [ "$MASTER" != "true" ]; then
+            echo "master_switch=false，跳过 self_summary"
+            exit 0
+          fi
 
       - name: 执行自我总结
         env:

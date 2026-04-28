@@ -94,11 +94,10 @@ def get_yesterday_close() -> str:
 
 
 def get_sector_trend() -> str:
-    """板块动向"""
+    """板块动向（东方财富行业板块）"""
     lines = ["【板块动向】", "━━━━━━━━━━━━━━━━━━━━"]
     try:
-        # 申万行业涨跌
-        df = ak.sw_index_third_info()
+        df = ak.stock_board_industry_name_em()
         df_sorted = df.sort_values("涨跌幅", ascending=False)
 
         top5 = df_sorted.head(5)
@@ -106,11 +105,17 @@ def get_sector_trend() -> str:
 
         lines.append("强势板块:")
         for _, r in top5.iterrows():
-            lines.append(f"  • {r['行业名称']}: {color_tag(r['涨跌幅'])}")
+            chg = float(r["涨跌幅"])
+            lead = r.get("领涨股票", "-")
+            lead_chg = r.get("领涨股票-涨跌幅", "-")
+            lines.append(f"  • {r['板块名称']}: {color_tag(chg)}")
+            if lead and lead != "-":
+                lines.append(f"    领涨: {lead}({lead_chg}%)")
 
         lines.append("弱势板块:")
         for _, r in bottom5.iterrows():
-            lines.append(f"  • {r['行业名称']}: {color_tag(r['涨跌幅'])}")
+            chg = float(r["涨跌幅"])
+            lines.append(f"  • {r['板块名称']}: {color_tag(chg)}")
 
         lines.append("")
     except Exception:
@@ -124,27 +129,23 @@ def get_north_money() -> str:
     """北向资金"""
     lines = ["【北向资金】", "━━━━━━━━━━━━━━━━━━━━"]
     try:
-        north = ak.stock_hsgt_north_net_flow_in_em(symbol="北向资金")
-        if not north.empty:
-            # 今日净流入
-            today_flow = north.iloc[0]
-            flow = today_flow.get("净流入", 0)
-            if isinstance(flow, str):
-                flow = float(flow)
-            sign = "+" if flow >= 0 else ""
-            lines.append(f"• 今日净流入: {sign}{flow:.2f}亿")
+        df = ak.stock_hsgt_fund_flow_summary_em()
+        # 筛选北向资金（北向=南向的反方向）
+        north_df = df[df["资金方向"] == "北向"]
 
-            # 近5日趋势
-            if len(north) >= 5:
-                recent = north.head(5)
-                total = recent["净流入"].sum() if "净流入" in recent.columns else 0
-                sign5 = "+" if total >= 0 else ""
-                lines.append(f"• 近5日合计: {sign5}{total:.2f}亿")
-        else:
-            lines.append("• 暂无数据")
+        for _, row in north_df.iterrows():
+            region = row.get("板块", row.get("类型", "?"))
+            net = float(row.get("资金净流入", 0))
+            sign = "+" if net >= 0 else ""
+            status = "净买入" if net >= 0 else "净卖出"
+            lines.append(f"• {region}: {status} {sign}{abs(net):.1f}亿")
+
+        if north_df.empty:
+            lines.append("• 今日暂无北向数据")
         lines.append("")
-    except Exception:
+    except Exception as e:
         lines.append("• 北向数据获取失败")
+        lines.append(f"  ({type(e).__name__})")
         lines.append("")
 
     return "\n".join(lines)

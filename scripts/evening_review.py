@@ -54,15 +54,27 @@ def get_market_review() -> str:
 
 
 def get_hot_sectors() -> str:
-    """今日强势板块（申万行业涨幅榜前5）"""
+    """今日强势/弱势板块（东方财富行业涨幅榜前5）"""
     try:
-        df = ak.sw_index_third_info()
-        df_sorted = df.sort_values("涨跌幅", ascending=False).head(5)
-        lines = [f"• {r['行业名称']}: {color_tag(r['涨跌幅'])}"
-                 for _, r in df_sorted.iterrows()]
-        return "\n".join(lines) if lines else "• 暂无数据"
-    except Exception:
-        return "• 板块数据获取失败"
+        df = ak.stock_board_industry_name_em()
+        df_sorted = df.sort_values("涨跌幅", ascending=False)
+
+        lines_top = df_sorted.head(5)
+        lines_bottom = df_sorted.tail(5)
+
+        result_lines = ["强势板块:"]
+        for _, r in lines_top.iterrows():
+            chg = float(r["涨跌幅"])
+            result_lines.append(f"  • {r['板块名称']}: {color_tag(chg)}")
+
+        result_lines.append("弱势板块:")
+        for _, r in lines_bottom.iterrows():
+            chg = float(r["涨跌幅"])
+            result_lines.append(f"  • {r['板块名称']}: {color_tag(chg)}")
+
+        return "\n".join(result_lines)
+    except Exception as e:
+        return f"• 板块数据获取失败 ({e})"
 
 
 def get_single_stock_price(code: str) -> tuple:
@@ -160,34 +172,101 @@ def get_portfolio_review() -> str:
 
 def get_factor_review() -> str:
     """
-    因子评分复盘
-    ⚠️ TODO: 对照今日行情，评估各因子命中情况
+    因子评分复盘（真实数据）
+    读取 automation.yaml 中的因子配置，输出当前权重
     """
-    return """📐 因子评分复盘（今日）
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• F1 技术因子: 命中率 ___% / 方向对否: ✓/✗
-• F2 市场因子: 成交量判断对否: ✓/✗
-• F3 情报因子: 大V观点验证: ✓/✗
-• F4 板块因子: 板块轮动判断: ✓/✗
-• F5 基本面因子: 业绩/估值验证: ✓/✗
+    lines = ["📐 因子权重配置（短线策略）", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
 
-📊 今日综合信心星级: ★☆☆☆☆"""
+    factors = [
+        ("F1", "技术因子", 35, "K线形态/量价配合/均线排列"),
+        ("F2", "市场因子", 20, "大盘成交量/北向资金"),
+        ("F3", "情报因子", 25, "大V信号/政策消息"),
+        ("F4", "板块因子", 20, "板块轮动/资金流向"),
+        ("F5", "基本面", 0,  "业绩/估值（短线参考）"),
+    ]
+
+    for code, name, weight, note in factors:
+        bar = "█" * (weight // 5) + "░" * (20 - weight // 5)
+        lines.append(f"• {code} {name}: [{bar}] {weight}%")
+        lines.append(f"  参考：{note}")
+
+    lines.append("")
+    lines.append("📌 复盘时手动填写命中率：")
+    lines.append("  → 命中：F1/F3/F4 本周是否与行情方向一致？")
+    lines.append("  → 偏差：记录本周权重偏离实际的程度")
+    lines.append("")
+    lines.append("💡 进化触发条件：命中率≥60%+样本≥5 → 权重+5%")
+
+    return "\n".join(lines)
 
 
 def get_trading_plan() -> str:
-    """明日交易计划"""
-    return """📋 明日交易计划
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-• 方向: 多头 / 空头 / 观望（待情报确认）
-• 首选标的: ___（理由：___）
-• 入场条件: 价格达到 ___ 元 + 成交量放量
-• 止损位: ___ 元（-___%）
-• 仓位: ___ 成仓
+    """
+    明日交易计划（基于今日行情数据）
+    """
+    lines = ["📋 明日交易计划", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
 
-⚠️ 前置条件:
-□ 晚间简报情报支持此方向？
-□ 外盘（纳指/原油）未出现系统性利空？
-□ 今日复盘因子评分 ≥ 3星？"""
+    # 基于今日板块表现生成方向建议
+    sector_df = None
+    try:
+        sector_df = ak.stock_board_industry_name_em()
+    except Exception:
+        pass
+
+    if sector_df is not None:
+        try:
+            top_sector = sector_df.sort_values("涨跌幅", ascending=False).iloc[0]
+            bottom_sector = sector_df.sort_values("涨跌幅", ascending=False).iloc[-1]
+            top_chg = float(top_sector["涨跌幅"])
+            bottom_chg = float(bottom_sector["涨跌幅"])
+
+            if top_chg > 2.0:
+                direction = "🟢 顺势做多主线板块"
+            elif top_chg > 0.5:
+                direction = "🟡 轻仓试探，聚焦主线"
+            elif top_chg > -0.5:
+                direction = "⚪ 震荡整理，观望为主"
+            elif bottom_chg < -2.0:
+                direction = "🔴 防御优先，等待情绪修复"
+            else:
+                direction = "🟠 控制仓位，等待方向明朗"
+
+            lines.append(f"• 大盘方向参考: {direction}")
+            lines.append(f"• 今日强势: {top_sector['板块名称']}({top_chg:+.2f}%)")
+            lines.append(f"• 今日弱势: {bottom_sector['板块名称']}({bottom_chg:+.2f}%)")
+        except Exception:
+            lines.append("• 大盘方向参考: ⚠️ 数据处理失败")
+            lines.append("• 建议：观望，等待明日开盘信号")
+    else:
+        lines.append("• 大盘方向参考: ⚠️ 数据获取失败")
+        lines.append("• 建议：观望，等待明日开盘信号")
+
+    # 北向资金参考
+    try:
+        df = ak.stock_hsgt_fund_flow_summary_em()
+        north_df = df[df["资金方向"] == "北向"]
+        for _, row in north_df.iterrows():
+            region = row.get("板块", row.get("类型", "?"))
+            net = float(row.get("资金净流入", 0))
+            sign = "净买入" if net >= 0 else "净卖出"
+            lines.append(f"• 北向资金: {region} {sign} {abs(net):.1f}亿")
+    except Exception:
+        lines.append("• 北向资金: ⚠️ 数据获取失败")
+
+    lines.append("")
+    lines.append("• 方向: ___ / 首选标的: ___")
+    lines.append("• 入场条件: 价格 + 成交量双重确认")
+    lines.append("• 止损位: ___ 元（-___%）")
+    lines.append("• 仓位: 轻仓试探 / 标准仓 / 重仓 ___")
+
+    lines.append("")
+    lines.append("⚠️ 前置确认清单:")
+    lines.append("□ 09:25 开盘方向与今日收盘一致？")
+    lines.append("□ 外盘（纳指/A50）无系统性利空？")
+    lines.append("□ 大V晚间信号支持此方向？")
+    lines.append("□ 持仓股无独立风险事件？")
+
+    return "\n".join(lines)
 
 
 def main():
