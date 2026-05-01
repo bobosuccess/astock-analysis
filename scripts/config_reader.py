@@ -1,9 +1,15 @@
 # 配置读取器
 # 用于读取 automation.yaml 配置
 
+import os
 import yaml
 from pathlib import Path
 from functools import lru_cache
+
+
+def _is_forced() -> bool:
+    """检测是否被强制运行（手动触发 GitHub Actions 时跳过 master_switch 检查）"""
+    return os.getenv("FORCE_RUN", "false").lower() == "true"
 
 CONFIG_PATH = Path(__file__).parent.parent / "automation.yaml"
 
@@ -18,7 +24,9 @@ def load_config() -> dict:
 
 
 def is_enabled(task_name: str) -> bool:
-    """检查任务是否开启"""
+    """检查任务是否开启（手动触发时强制开启）"""
+    if _is_forced():
+        return True
     cfg = load_config()
     if not cfg["automation"]["master_switch"]:
         return False
@@ -26,7 +34,9 @@ def is_enabled(task_name: str) -> bool:
 
 
 def get_layer_enabled(layer_name: str) -> bool:
-    """检查分层开关"""
+    """检查分层开关（手动触发时强制开启）"""
+    if _is_forced():
+        return True
     cfg = load_config()
     if not cfg["automation"]["master_switch"]:
         return False

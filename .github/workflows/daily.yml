@@ -31,6 +31,7 @@ on:
 env:
   TZ: Asia/Shanghai
   PYTHONIOENCODING: UTF-8
+  FORCE_RUN: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
 
 jobs:
   # ========== 额度检查（优先运行）==========
@@ -117,7 +118,11 @@ jobs:
       - name: 执行晨间简报
         env:
           SCKEY: ${{ secrets.SCKEY }}
-        run: python scripts/morning_report.py
+        run: |
+          echo ">>> 开始执行 morning_report"
+          echo ">>> SCKEY 环境变量长度: ${#SCKEY}"
+          python scripts/morning_report.py
+          echo ">>> morning_report 执行完成"
 
   # ========== 新闻解读 ==========
   news_interpret:
